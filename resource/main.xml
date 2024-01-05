@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<Window caption="0,0,0,100" mininfo="1102,728" maxinfo="1102,728">
+    <Font id="1" name="微软雅黑" size="10" bold="false" default="true" />
+	<Font id="2" name="微软雅黑" size="13" bold="false"  />
+    <Font id="3" name="微软雅黑" size="18" bold="false"  />
+    <Font id="4" name="微软雅黑" size="20" bold="false"  />
+    <Font id="5" name="微软雅黑" size="22" bold="false"  />
+    
+    <Container name="root">
+        <VerticalLayout name="homePage" visible="false" bkimage="file='home_page_background.png'">
+            <Control height="120" />
+            <HorizontalLayout height="30">
+                <Control width="688" />
+                <Button name="importAccountBtn" width="88" />
+            </HorizontalLayout>
+            <Control height="40" />
+            <VerticalLayout height="200" padding="276,0,140,0">
+                <HorizontalLayout name="line1" height="34" visible="false">                    
+                    <Label width="80" text="1" textcolor="#ff000000" align="center" valign="center" font="1" />
+                    <Label name="accountLabel" width="160" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+                    <Label name="passwordLabel" width="160" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+                    <Label name="statusLabel" width="82" text="连接中" textcolor="#ff000000" align="center" valign="center" font="2" />
+                    <Label name="cookLabel" width="200" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+                </HorizontalLayout>
+                <Control name="seperator1" height="1" bkcolor="#ffaaaaaa" padding="2,0,0,0"  visible="false"/>
+                
+                <HorizontalLayout name="line2" height="34" visible="false">                    
+                    <Label width="80" text="2" textcolor="#ff000000" align="center" valign="center" font="1" />
+                    <Label name="accountLabel" width="160" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+                    <Label name="passwordLabel" width="160" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+                    <Label name="statusLabel" width="82" text="连接中" textcolor="#ff000000" align="center" valign="center" font="2" />
+                    <Label name="cookLabel" width="200" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+                </HorizontalLayout>
+                <Control name="seperator2" height="1" bkcolor="#ffaaaaaa" padding="2,0,0,0" visible="false"/>
+                
+                <HorizontalLayout name="line3" height="34" visible="false">                    
+                    <Label width="80" text="3" textcolor="#ff000000" align="center" valign="center" font="1" />
+                    <Label name="accountLabel" width="160" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+                    <Label name="passwordLabel" width="160" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+                    <Label name="statusLabel" width="82" text="连接中" textcolor="#ff000000" align="center" valign="center" font="2" />
+                    <Label name="cookLabel" width="200" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+                </HorizontalLayout>
+                <Control name="seperator3" height="1" bkcolor="#ffaaaaaa" padding="2,0,0,0" visible="false"/>
+            </VerticalLayout>            
+        </VerticalLayout>
+        
+        <VerticalLayout name="accountPage" visible="true" bkimage="file='account_page_background.png'">
+            <Control height="269" />
+            <HorizontalLayout height="24">
+                <Control width="457" />
+                <Edit name="activateCodeEdit" width="380" height="22" textcolor="#ff000000" font="1" bkcolor="#ffffffff" nativebkcolor="#ffffffff" />
+                <Control width="20" />
+                <Button name="activateBtn" width="50" />
+            </HorizontalLayout>            
+        </VerticalLayout>
+        
+        <VerticalLayout name="usagePage" visible="false" bkimage="file='usage_page_background.png'">
+        </VerticalLayout>
+        
+        <VerticalLayout name="settingPage" visible="false" bkimage="file='setting_page_background.png'">
+            <Control height="297" />
+            <HorizontalLayout height="27">
+                <Control width="385" />
+                <Button name="mapBtn" width="127" />                
+            </HorizontalLayout>
+            <Control height="15" />
+            <HorizontalLayout height="24">
+                <Control width="385" />                
+                <Edit name="locationEdit" width="236" height="22" textcolor="#ff000000" font="1" nativebkcolor="#ffffffff" />
+            </HorizontalLayout>
+            <Control height="294" />
+            <HorizontalLayout height="46">
+                <Control width="385" />                
+                <Button name="saveSettingBtn" width="127" />     
+            </HorizontalLayout>
+        </VerticalLayout>
+        
+        <VerticalLayout name="workPage" visible="false" bkimage="file='work_page_background.png'">
+            <Control height="196" />
+            <HorizontalLayout height="280">
+                <Control width="373" />                
+                <RichEdit name="logEdit" width="505" height="280" textcolor="#ffffffff" font="2" readonly="true" multiline="true" transparent="true" vscrollbar="true" autovscroll="true" wantreturn="false" wantctrlreturn="false" />
+            </HorizontalLayout>
+            <Control height="67" />
+            <HorizontalLayout height="20">
+                <Control width="612" />                
+                <Label width="80" text="0" textcolor="#ffffffff" font="2" valign="top" />
+            </HorizontalLayout>
+        </VerticalLayout>
+        
+        <VerticalLayout name="switchPage" visible="true" mouse="false" >
+            <Control height="92" mouse="false" />
+            <HorizontalLayout height="40" mouse="false" >
+                <Control width="73" />                
+                <Button name="homePageBtn" width="70" />     
+            </HorizontalLayout>
+            <HorizontalLayout height="40" mouse="false" >
+                <Control width="73" />                
+                <Button name="accountPageBtn" width="70" />     
+            </HorizontalLayout>
+            <HorizontalLayout height="40" mouse="false" >
+                <Control width="73" />                
+                <Button name="usagePageBtn" width="70" />     
+            </HorizontalLayout>
+            <HorizontalLayout height="40" mouse="false" >
+                <Control width="73" />                
+                <Button name="settingPageBtn" width="70" />     
+            </HorizontalLayout>
+            <HorizontalLayout height="40" mouse="false" >
+                <Control width="73" />                
+                <Button name="workPageBtn" width="70" />     
+            </HorizontalLayout>
+            <Control height="30" mouse="false" />
+            <HorizontalLayout height="44" mouse="false" >
+                <Control width="60" />                
+                <Button name="startBtn" width="110" />     
+            </HorizontalLayout>
+        </VerticalLayout>
+    </Container>
+</Window>
