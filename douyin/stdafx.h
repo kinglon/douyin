@@ -20,3 +20,5 @@
 // duilib
 #include "DUICommon.h"
 using namespace IcrDuiLib;
+
+#include "LogMacro.h"

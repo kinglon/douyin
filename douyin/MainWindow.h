@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "TcpClient.h"
 
 class CAccountItem
 {
@@ -17,7 +18,7 @@ public:
 	std::wstring m_cook;
 };
 
-class CMainWindow : public WindowImplBase
+class CMainWindow : public WindowImplBase, public ITcpClientCallback
 {
 public:
 	CMainWindow();
@@ -45,6 +46,10 @@ protected: //override base
 	virtual LPCTSTR GetWindowClassName(void) const override;
 	virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
+public: //implement ITcpClientCallback
+	virtual void OnConnected() override;
+	virtual void OnDataArrive(const std::string& data) override;
+
 private:
 	void OnImportAccountBtn(TNotifyUI& msg);
 	void OnActivateBtn(TNotifyUI& msg);
@@ -66,6 +71,10 @@ private:
 
 	void Log(const std::wstring& message);
 
+	void DataArrive(const std::string& data);
+
+	void SendIdentifier(const std::wstring& identifier);
+
 private:
 	std::vector<CAccountItem> m_accountList;
 
@@ -76,4 +85,6 @@ private:
 	CControlUI* m_currentPage = nullptr;
 
 	bool m_activate = false;
+
+	CTcpClient m_tcpClient;
 };

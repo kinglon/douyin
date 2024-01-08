@@ -51,7 +51,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\duilib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\duilib\include;$(SolutionDir)Utility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -68,7 +68,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)third_party\duilib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)third_party\duilib\include;$(SolutionDir)Utility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -83,16 +84,29 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Utility\DumpUtil.h" />
+    <ClInclude Include="..\Utility\IcrCriticalSection.h" />
+    <ClInclude Include="..\Utility\ImCharset.h" />
+    <ClInclude Include="..\Utility\ImPath.h" />
+    <ClInclude Include="..\Utility\LogBuffer.h" />
+    <ClInclude Include="..\Utility\LogMacro.h" />
+    <ClInclude Include="..\Utility\LogUtil.h" />
+    <ClInclude Include="..\Utility\TcpClient.h" />
     <ClInclude Include="douyin.h" />
-    <ClInclude Include="ImPath.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Utility\DumpUtil.cpp" />
+    <ClCompile Include="..\Utility\IcrCriticalSection.cpp" />
+    <ClCompile Include="..\Utility\ImCharset.cpp" />
+    <ClCompile Include="..\Utility\ImPath.cpp" />
+    <ClCompile Include="..\Utility\LogBuffer.cpp" />
+    <ClCompile Include="..\Utility\LogUtil.cpp" />
+    <ClCompile Include="..\Utility\TcpClient.cpp" />
     <ClCompile Include="douyin.cpp" />
-    <ClCompile Include="ImPath.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

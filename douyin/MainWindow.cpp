@@ -1,12 +1,17 @@
 #include "stdafx.h"
 #include "MainWindow.h"
 #include "ImPath.h"
+#include "ImCharset.h"
 #include "Resource.h"
 #include <Commdlg.h>
 #include <stdlib.h>
 #include <time.h>
 #include <shellapi.h>
 #include <sstream>
+#include <shlwapi.h>
+
+#define WM_TCPCLIENT_CONNECT WM_USER+1
+#define WM_TCPCLIENT_DATA_ARRIVE WM_USER+2
 
 CMainWindow::CMainWindow()
 {
@@ -19,21 +24,41 @@ CMainWindow::~CMainWindow()
 
 void CMainWindow::InitWindow()
 {
+	__super::InitWindow();
+
 	SetIcon(IDI_DOUYIN);
 
 	m_currentPage = m_PaintManager.FindControl(L"accountPage");
 
-	__super::InitWindow();
+	m_tcpClient.SetCallback(this);
+	m_tcpClient.SetHost("127.0.0.1");
+	m_tcpClient.SetPort(80);
+	m_tcpClient.Start();
 }
 
 void CMainWindow::OnFinalMessage(HWND hWnd)
 {
 	__super::OnFinalMessage(hWnd);
+	m_tcpClient.Stop();
 }
 
 CDuiString CMainWindow::GetSkinFolder()
 {
-	return CImPath::GetSkinRootPath().c_str();
+	static std::wstring strSkinRootPath = L"";
+	if (!strSkinRootPath.empty())
+	{
+		return strSkinRootPath.c_str();
+	}
+
+	if (PathFileExists((CImPath::GetSoftInstallPath() + L"resource\\").c_str()))
+	{
+		strSkinRootPath = L"resource\\";
+		return strSkinRootPath.c_str();
+	}
+	else
+	{
+		return L"";
+	}
 }
 
 CDuiString CMainWindow::GetSkinFile()
@@ -74,8 +99,118 @@ LRESULT CMainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		// 禁止双击放大窗口
 		return 0L;
 	}
+	else if (uMsg == WM_TCPCLIENT_CONNECT)
+	{
+		SendIdentifier(L"");
+		return 0L;
+	}
+	else if (uMsg == WM_TCPCLIENT_DATA_ARRIVE)
+	{
+		std::string* data = (std::string*)lParam;
+		DataArrive(*data);
+		delete data;
+		return 0L;
+	}
 	
 	return __super::HandleMessage(uMsg, wParam, lParam);
+}
+
+void CMainWindow::OnConnected()
+{
+	PostMessage(WM_TCPCLIENT_CONNECT, 0, 0);
+}
+
+void CMainWindow::OnDataArrive(const std::string& data)
+{
+	std::string* lparam = new std::string(data);
+	PostMessage(WM_TCPCLIENT_DATA_ARRIVE, 0, (LPARAM)lparam);
+}
+
+void CMainWindow::SendIdentifier(const std::wstring& identifier)
+{
+	if (!m_tcpClient.IsConnected())
+	{
+		return;
+	}
+
+	std::vector<std::wstring> identifiers;
+	if (identifier.empty())
+	{
+		identifiers.push_back(identifier);
+	}
+	else
+	{
+		for (auto& account : m_accountList)
+		{
+			identifiers.push_back(account.m_userId);
+		}
+	}
+
+	for (auto& identifier : identifiers)
+	{
+		std::wstringstream formattedTime;
+		formattedTime << L"cmd=identifier,ctype=main,id=" << identifier;
+		std::wstring data = formattedTime.str();
+		m_tcpClient.SendData(CImCharset::UnicodeToUTF8(data.c_str()));
+	}
+}
+
+void CMainWindow::DataArrive(const std::string& data)
+{
+	std::map<std::string, std::string> result;
+	std::istringstream ss(data);
+	std::string token;
+
+	while (std::getline(ss, token, ',')) 
+	{
+		size_t pos = token.find('=');
+		if (pos != std::string::npos) 
+		{
+			std::string key = token.substr(0, pos);
+			std::string value = token.substr(pos + 1);
+			result[key] = value;
+		}
+	}
+
+	if (result.find("cmd") == result.end() 
+		|| result["cmd"] != "push"
+		|| result.find("id") == result.end()
+		|| result.find("type") == result.end())
+	{
+		return;
+	}
+
+	std::wstring id = CImCharset::UTF8ToUnicode(result["id"].c_str());
+	std::string type = result["type"];
+	if (type == "log" && result.find("message") != result.end())
+	{
+		Log(CImCharset::UTF8ToUnicode(result["message"].c_str()));
+	}
+	else if (type == "addfan" && result.find("count") != result.end())
+	{
+		int count = atoi(result["count"].c_str());
+		m_fanCount += count;
+		m_PaintManager.FindControl(L"fanCountLabel")->SetText(std::to_wstring(m_fanCount).c_str());
+	}
+	else if (type == "changestatus" && result.find("status") != result.end())
+	{
+		for (auto& account : m_accountList)
+		{
+			if (account.m_userId == id)
+			{
+				if (result["status"] == "0")
+				{
+					account.m_status = L"正常";
+				}
+				else
+				{
+					account.m_status = L"异常";
+				}
+				break;
+			}
+		}
+		UpdateAccountListUI();
+	}
 }
 
 void CMainWindow::ShowPage(const wchar_t* pageName)
@@ -134,6 +269,8 @@ void CMainWindow::OnImportAccountBtn(TNotifyUI& msg)
 	accountItem.m_cook = GenerateString(10);
 	m_accountList.push_back(accountItem);
 	UpdateAccountListUI();
+
+	SendIdentifier(accountItem.m_userId);
 }
 
 std::wstring CMainWindow::GenerateString(int length)
