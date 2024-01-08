@@ -109,9 +109,9 @@ void CTcpClient::ParseData(char* dataBuffer, int& dataLength)
 		}
 
 		std::string value(&dataBuffer[offset + 2], length);
+		LOG_INFO(L"data arrive: %s", value.c_str());
 		if (m_callback)
-		{
-			LOG_INFO(L"data arrive: %s", value.c_str());
+		{			
 			m_callback->OnDataArrive(value);
 		}
 
@@ -134,10 +134,14 @@ void CTcpClient::SendData(const std::string& data)
 		LOG_ERROR(L"failed to send data, not connected");
 		return;
 	}
-	
-	if (send(m_clientSocket, data.c_str(), data.length(), 0) == SOCKET_ERROR)
+
+	char* dataBuffer = new char[data.length() + 2];
+	dataBuffer[0] = static_cast<char>((data.length() >> 8) & 0xFF);
+	dataBuffer[1] = static_cast<char>(data.length() & 0xFF);
+	memcpy(&dataBuffer[2], data.c_str(), data.length());	
+	if (send(m_clientSocket, dataBuffer, data.length()+2, 0) == SOCKET_ERROR)
 	{
 		LOG_ERROR(L"failed to send data, error: %d, data: %s", WSAGetLastError(), CImCharset::UTF8ToUnicode(data.c_str()).c_str());		
-		return;
 	}
+	delete[] dataBuffer;
 }
