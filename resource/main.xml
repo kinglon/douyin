@@ -51,6 +51,11 @@
                 <Edit name="activateCodeEdit" width="380" height="22" textcolor="#ff000000" font="1" bkcolor="#ffffffff" nativebkcolor="#ffffffff" />
                 <Control width="20" />
                 <Button name="activateBtn" width="50" />
+            </HorizontalLayout>
+            <Control height="182" />
+            <HorizontalLayout height="30">
+                <Control width="584" />
+                <Label name="publicIpLabel" width="110" text="" textcolor="#ff8c8c8c" font="2" valign="center" />
             </HorizontalLayout>            
         </VerticalLayout>
         
@@ -84,7 +89,7 @@
             <Control height="67" />
             <HorizontalLayout height="20">
                 <Control width="612" />                
-                <Label width="80" text="0" textcolor="#ffffffff" font="2" valign="top" />
+                <Label name="fanCountLabel" width="80" text="0" textcolor="#ffffffff" font="2" valign="top" />
             </HorizontalLayout>
         </VerticalLayout>
         

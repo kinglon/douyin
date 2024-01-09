@@ -55,6 +55,11 @@ CDuiString CMainWindow::GetSkinFolder()
 		strSkinRootPath = L"resource\\";
 		return strSkinRootPath.c_str();
 	}
+	else if (PathFileExists((CImPath::GetSoftInstallPath() + L"..\\resource\\").c_str()))
+	{
+		strSkinRootPath = L"..\\resource\\";
+		return strSkinRootPath.c_str();
+	}
 	else
 	{
 		return L"";
@@ -102,6 +107,7 @@ LRESULT CMainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	else if (uMsg == WM_TCPCLIENT_CONNECT)
 	{
 		SendIdentifier(L"");
+		GetPublicIp();
 		return 0L;
 	}
 	else if (uMsg == WM_TCPCLIENT_DATA_ARRIVE)
@@ -155,6 +161,15 @@ void CMainWindow::SendIdentifier(const std::wstring& identifier)
 	}
 }
 
+void CMainWindow::GetPublicIp()
+{
+	if (!m_tcpClient.IsConnected())
+	{
+		return;
+	}
+	m_tcpClient.SendData("cmd=get_public_ip");
+}
+
 void CMainWindow::DataArrive(const std::string& data)
 {
 	std::map<std::string, std::string> result;
@@ -172,44 +187,59 @@ void CMainWindow::DataArrive(const std::string& data)
 		}
 	}
 
-	if (result.find("cmd") == result.end() 
-		|| result["cmd"] != "push"
-		|| result.find("id") == result.end()
-		|| result.find("type") == result.end())
+	if (result.find("cmd") == result.end())
 	{
 		return;
 	}
 
-	std::wstring id = CImCharset::UTF8ToUnicode(result["id"].c_str());
-	std::string type = result["type"];
-	if (type == "log" && result.find("message") != result.end())
+	std::string cmd = result["cmd"];
+	if (cmd == "push")
 	{
-		Log(CImCharset::UTF8ToUnicode(result["message"].c_str()));
-	}
-	else if (type == "addfan" && result.find("count") != result.end())
-	{
-		int count = atoi(result["count"].c_str());
-		m_fanCount += count;
-		m_PaintManager.FindControl(L"fanCountLabel")->SetText(std::to_wstring(m_fanCount).c_str());
-	}
-	else if (type == "changestatus" && result.find("status") != result.end())
-	{
-		for (auto& account : m_accountList)
+		if (result.find("id") == result.end() || result.find("type") == result.end())
 		{
-			if (account.m_userId == id)
-			{
-				if (result["status"] == "0")
-				{
-					account.m_status = L"正常";
-				}
-				else
-				{
-					account.m_status = L"异常";
-				}
-				break;
-			}
+			return;
 		}
-		UpdateAccountListUI();
+
+		std::wstring id = CImCharset::UTF8ToUnicode(result["id"].c_str());
+		std::string type = result["type"];
+		if (type == "log" && result.find("message") != result.end())
+		{
+			Log(CImCharset::UTF8ToUnicode(result["message"].c_str()));
+		}
+		else if (type == "addfan" && result.find("count") != result.end())
+		{
+			int count = atoi(result["count"].c_str());
+			m_fanCount += count;
+			m_PaintManager.FindControl(L"fanCountLabel")->SetText(std::to_wstring(m_fanCount).c_str());
+			Log(L"加粉成功");
+		}
+		else if (type == "changestatus" && result.find("status") != result.end())
+		{
+			for (auto& account : m_accountList)
+			{
+				if (account.m_userId == id)
+				{
+					if (result["status"] == "0")
+					{
+						account.m_status = L"正常";
+					}
+					else
+					{
+						account.m_status = L"异常";
+					}
+					break;
+				}
+			}
+			UpdateAccountListUI();
+		}
+	}
+	else if (cmd == "get_public_ip")
+	{
+		if (result.find("ip") == result.end())
+		{
+			return;
+		}
+		m_PaintManager.FindControl(L"publicIpLabel")->SetText(CImCharset::UTF8ToUnicode(result["ip"].c_str()).c_str());
 	}
 }
 

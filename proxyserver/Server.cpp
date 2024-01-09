@@ -2,6 +2,7 @@
 #include "Server.h"
 #include <sstream>
 #include "ImCharset.h"
+#include <ws2tcpip.h>
 
 CServer::CServer()
 {
@@ -139,14 +140,24 @@ void CServer::HandleData(SOCKET clientSocket, const std::string& data)
 		}
 		
 		std::string id = result["id"];
-		auto it = m_douyinClients.find(id);
-		if (it == m_douyinClients.end())
+		if (!id.empty())
 		{
-			LOG_ERROR(L"failed to push cmd to %s", id.c_str());
-			return;
-		}
+			auto it = m_douyinClients.find(id);
+			if (it == m_douyinClients.end())
+			{
+				LOG_ERROR(L"failed to push cmd to %s", id.c_str());
+				return;
+			}
 
-		m_tcpServer.SendData(it->second, data);
+			m_tcpServer.SendData(it->second, data);
+		}
+		else
+		{
+			for (auto it = m_douyinClients.begin(); it != m_douyinClients.end(); it++)
+			{
+				m_tcpServer.SendData(it->second, data);
+			}
+		}
 	}
 	else if (cmd == "identify")
 	{
@@ -181,6 +192,17 @@ void CServer::HandleData(SOCKET clientSocket, const std::string& data)
 		}
 
 		std::string data = "cmd=getdouyinclients,clients=" + clients;
+		m_tcpServer.SendData(clientSocket, data);
+	}
+	else if (cmd == "get_public_ip")
+	{
+		SOCKADDR_IN clientAddr;
+		int clientAddrLen = sizeof(clientAddr);
+		getpeername(clientSocket, (SOCKADDR*)&clientAddr, &clientAddrLen);
+
+		char clientIP[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
+		std::string data = std::string("cmd=get_public_ip,ip=") + clientIP;
 		m_tcpServer.SendData(clientSocket, data);
 	}
 }

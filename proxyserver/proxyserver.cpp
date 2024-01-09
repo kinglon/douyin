@@ -12,7 +12,7 @@ CLogUtil* g_dllLog = nullptr;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	g_dllLog = CLogUtil::GetLog(L"main");
+	g_dllLog = CLogUtil::GetLog(L"server");
 	CServer server;
 	server.Run();
 	return 0;

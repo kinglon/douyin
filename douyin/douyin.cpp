@@ -31,18 +31,9 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	_In_ int       nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(lpCmdLine);	
 
-	// 单实例
-	const wchar_t* mutexName = L"{4ED33E4A-D47A-4D0A-8523-158D66420098}";
-	HANDLE mutexHandle = CreateMutexW(nullptr, TRUE, mutexName);
-	if (mutexHandle == nullptr || GetLastError() == ERROR_ALREADY_EXISTS)
-	{
-		::MessageBox(NULL, L"程序已经在运行", L"提示", MB_OK);
-		return FALSE;
-	}
-
-	g_dllLog = CLogUtil::GetLog(L"main");
+	g_dllLog = CLogUtil::GetLog(L"douyin");
 
 	_SetProcessDPIAware();	
 

@@ -75,6 +75,8 @@ private:
 
 	void SendIdentifier(const std::wstring& identifier);
 
+	void GetPublicIp();
+
 private:
 	std::vector<CAccountItem> m_accountList;
 
