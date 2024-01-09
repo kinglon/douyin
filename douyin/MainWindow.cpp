@@ -35,7 +35,7 @@ void CMainWindow::InitWindow()
 	m_currentPage = m_PaintManager.FindControl(L"accountPage");
 
 	m_tcpClient.SetCallback(this);
-	m_tcpClient.SetHost("127.0.0.1");
+	m_tcpClient.SetHost(CImCharset::UnicodeToUTF8(CSettingManager::Get()->m_serverAddr.c_str()).c_str());
 	m_tcpClient.SetPort(80);
 	m_tcpClient.Start();
 }
@@ -227,17 +227,13 @@ void CMainWindow::DataArrive(const std::string& data)
 		{
 			for (auto& account : m_accountList)
 			{
-				if (account.m_userId == id)
+				if (result["status"] == "0")
 				{
-					if (result["status"] == "0")
-					{
-						account.m_status = L"正常";
-					}
-					else
-					{
-						account.m_status = L"异常";
-					}
-					break;
+					account.m_status = L"正常";
+				}
+				else
+				{
+					account.m_status = L"异常";
 				}
 			}
 			UpdateAccountListUI();

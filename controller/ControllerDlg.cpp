@@ -127,7 +127,7 @@ BOOL CControllerDlg::OnInitDialog()
 	m_clientList.InsertColumn(0, _T("ID"), LVCFMT_CENTER, 200);
 	m_clientList.SetExtendedStyle(LVS_EX_FULLROWSELECT);
 
-	m_tcpClient.SetHost("127.0.0.1");
+	m_tcpClient.SetHost("47.122.25.21");
 	m_tcpClient.SetPort(80);
 	m_tcpClient.SetCallback(this);
 	m_tcpClient.Start();
