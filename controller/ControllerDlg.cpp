@@ -58,6 +58,7 @@ CControllerDlg::CControllerDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_CONTROLLER_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_id = GenerateString(10);
 }
 
 void CControllerDlg::DoDataExchange(CDataExchange* pDX)
@@ -186,6 +187,7 @@ void CControllerDlg::OnClose()
 
 void CControllerDlg::OnConnected()
 {
+	SendIdentifier();
 	m_tcpClient.SendData("cmd=getdouyinclients");
 }
 
@@ -369,4 +371,33 @@ void CControllerDlg::ChangeStatus(bool ok)
 	CString data;
 	data.Format(L"cmd=push,id=%s,type=changestatus,status=%d", m_clientToControl, ok?0:1);
 	m_tcpClient.SendData(CImCharset::UnicodeToUTF8(data));
+}
+
+void CControllerDlg::SendIdentifier()
+{
+	if (!m_tcpClient.IsConnected())
+	{
+		return;
+	}
+
+	std::wstringstream formattedTime;
+	formattedTime << L"cmd=identify,ctype=controller,id=" << m_id;
+	std::wstring data = formattedTime.str();
+	m_tcpClient.SendData(CImCharset::UnicodeToUTF8(data.c_str()));
+}
+
+std::wstring CControllerDlg::GenerateString(int length)
+{
+	std::wstring randomString;
+	for (int i = 0; i < 10; i++) {
+		wchar_t randomChar = rand() % 36; // Generate a random number between 0 and 35
+		if (randomChar < 10) {
+			randomChar += L'0'; // Convert the number to a digit
+		}
+		else {
+			randomChar = L'a' + (randomChar - 10); // Convert the number to a letter
+		}
+		randomString += randomChar;
+	}
+	return randomString;
 }

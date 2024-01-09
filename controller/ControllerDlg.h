@@ -36,10 +36,16 @@ private:
 
 	void ChangeStatus(bool ok);
 
+	void SendIdentifier();
+
+	std::wstring GenerateString(int length);
+
 private:
 	CTcpClient m_tcpClient;
 
 	CString m_clientToControl;
+
+	std::wstring m_id;
 
 // 实现
 protected:

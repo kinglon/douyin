@@ -140,7 +140,7 @@ void CMainWindow::SendIdentifier(const std::wstring& identifier)
 	}
 
 	std::vector<std::wstring> identifiers;
-	if (identifier.empty())
+	if (!identifier.empty())
 	{
 		identifiers.push_back(identifier);
 	}
@@ -155,7 +155,7 @@ void CMainWindow::SendIdentifier(const std::wstring& identifier)
 	for (auto& identifier : identifiers)
 	{
 		std::wstringstream formattedTime;
-		formattedTime << L"cmd=identifier,ctype=main,id=" << identifier;
+		formattedTime << L"cmd=identify,ctype=douyin,id=" << identifier;
 		std::wstring data = formattedTime.str();
 		m_tcpClient.SendData(CImCharset::UnicodeToUTF8(data.c_str()));
 	}

@@ -23,7 +23,9 @@ void CTcpClient::Start()
 	}
 
 	m_isStart = true;
-	std::async(std::launch::async, &CTcpClient::ThreadProc, this);
+
+	// todo by yejinlong, ÊÍ·Åthread¶ÔÏó
+	std::thread* thread = new std::thread(&CTcpClient::ThreadProc, this);
 }
 
 void CTcpClient::ThreadProc()
@@ -109,7 +111,7 @@ void CTcpClient::ParseData(char* dataBuffer, int& dataLength)
 		}
 
 		std::string value(&dataBuffer[offset + 2], length);
-		LOG_INFO(L"data arrive: %s", value.c_str());
+		LOG_INFO(L"data arrive: %s", CImCharset::UTF8ToUnicode(value.c_str()).c_str());
 		if (m_callback)
 		{			
 			m_callback->OnDataArrive(value);

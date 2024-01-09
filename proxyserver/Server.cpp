@@ -97,7 +97,7 @@ void CServer::OnDataArrive(SOCKET clientSocket, const std::string& data)
 		}
 
 		std::string value(&dataBuffer[offset + 2], length);
-		LOG_INFO(L"data arrive: %s", value.c_str());
+		LOG_INFO(L"data arrive: %s", CImCharset::UTF8ToUnicode(value.c_str()).c_str());
 		HandleData(clientSocket, value);
 
 		offset += 2 + length;

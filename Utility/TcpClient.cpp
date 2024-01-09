@@ -109,7 +109,7 @@ void CTcpClient::ParseData(char* dataBuffer, int& dataLength)
 		}
 
 		std::string value(&dataBuffer[offset + 2], length);
-		LOG_INFO(L"data arrive: %s", value.c_str());
+		LOG_INFO(L"data arrive: %s", CImCharset::UTF8ToUnicode(value.c_str()).c_str());
 		if (m_callback)
 		{			
 			m_callback->OnDataArrive(value);

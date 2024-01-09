@@ -124,21 +124,22 @@ void CTcpServer::ThreadProc()
 						m_callback->OnDataArrive(*it, std::string(recvBuffer, recvResult));
 					}
 				}
-				else if (recvResult == 0) 
+				else
 				{
+					if (recvResult < 0)
+					{
+						LOG_ERROR(L"client 0x%x recv error: %d", *it, WSAGetLastError());
+					}
+
 					LOG_INFO(L"client 0x%x disconnected", *it);
-					closesocket(*it);
-					it = clientSockets.erase(it);
 					if (m_callback)
 					{
 						m_callback->OnDisconnected(*it);
 					}
+					closesocket(*it);
+					it = clientSockets.erase(it);
 					continue;
-				}
-				else 
-				{
-					LOG_ERROR(L"client 0x%x recv error: %d", *it, WSAGetLastError());
-				}
+				}				
 			}
 
 			++it;
@@ -154,6 +155,8 @@ void CTcpServer::ThreadProc()
 
 void CTcpServer::SendData(SOCKET clientSocket, const std::string& data)
 {	
+	LOG_INFO(L"send data: %s", CImCharset::UTF8ToUnicode(data.c_str()).c_str());
+
 	char* dataBuffer = new char[data.length() + 2];
 	dataBuffer[0] = static_cast<char>((data.length() >> 8) & 0xFF);
 	dataBuffer[1] = static_cast<char>(data.length() & 0xFF);
