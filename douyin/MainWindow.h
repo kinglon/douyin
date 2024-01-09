@@ -77,6 +77,8 @@ private:
 
 	void GetPublicIp();
 
+	void AddFan(int count);
+
 private:
 	std::vector<CAccountItem> m_accountList;
 
@@ -89,4 +91,6 @@ private:
 	bool m_activate = false;
 
 	CTcpClient m_tcpClient;
+
+	std::wstring m_clientId;
 };

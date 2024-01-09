@@ -148,14 +148,18 @@ void CServer::HandleData(SOCKET clientSocket, const std::string& data)
 				LOG_ERROR(L"failed to push cmd to %s", id.c_str());
 				return;
 			}
-
+			
 			m_tcpServer.SendData(it->second, data);
 		}
 		else
 		{
+			size_t pos = data.find("id=");
+			std::string prefix = data.substr(0, pos+3);
+			std::string suffix = data.substr(pos + 3);
 			for (auto it = m_douyinClients.begin(); it != m_douyinClients.end(); it++)
-			{
-				m_tcpServer.SendData(it->second, data);
+			{				
+				std::string newData = prefix + it->first + suffix;
+				m_tcpServer.SendData(it->second, newData);
 			}
 		}
 	}
@@ -209,6 +213,7 @@ void CServer::HandleData(SOCKET clientSocket, const std::string& data)
 
 void CServer::NotifyDouyinClientChange()
 {
+	return;
 	for (auto it = m_controllerClients.begin(); it != m_controllerClients.end(); it++)
 	{
 		m_tcpServer.SendData(it->second, "douyinclientchange");

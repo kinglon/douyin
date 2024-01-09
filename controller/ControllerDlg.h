@@ -71,4 +71,12 @@ public:
 	afx_msg void OnPrivateChat();
 	afx_msg void OnComment();
 	afx_msg void OnPushLog();
+	afx_msg void OnBnClickedButtonAccountOk();
+	afx_msg void OnBnClickedButtonAccountError();
+	afx_msg void OnBnClickedButtonAddFan();
+	afx_msg void OnBnClickedButtonFollow();
+	afx_msg void OnBnClickedButtonReply();
+	afx_msg void OnBnClickedButtonChat();
+	afx_msg void OnBnClickedButtonComment();
+	afx_msg void OnBnClickedButtonPushLog();
 };

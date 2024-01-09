@@ -82,6 +82,14 @@ BEGIN_MESSAGE_MAP(CControllerDlg, CDialogEx)
 	ON_COMMAND(ID_PRIVATE_CHAT, &CControllerDlg::OnPrivateChat)
 	ON_COMMAND(ID_COMMENT, &CControllerDlg::OnComment)
 	ON_COMMAND(ID_PUSH_LOG, &CControllerDlg::OnPushLog)
+	ON_BN_CLICKED(IDC_BUTTON_ACCOUNT_OK, &CControllerDlg::OnBnClickedButtonAccountOk)
+	ON_BN_CLICKED(IDC_BUTTON_ACCOUNT_ERROR, &CControllerDlg::OnBnClickedButtonAccountError)
+	ON_BN_CLICKED(IDC_BUTTON_ADD_FAN, &CControllerDlg::OnBnClickedButtonAddFan)
+	ON_BN_CLICKED(IDC_BUTTON_FOLLOW, &CControllerDlg::OnBnClickedButtonFollow)
+	ON_BN_CLICKED(IDC_BUTTON_REPLY, &CControllerDlg::OnBnClickedButtonReply)
+	ON_BN_CLICKED(IDC_BUTTON_CHAT, &CControllerDlg::OnBnClickedButtonChat)
+	ON_BN_CLICKED(IDC_BUTTON_COMMENT, &CControllerDlg::OnBnClickedButtonComment)
+	ON_BN_CLICKED(IDC_BUTTON_PUSH_LOG, &CControllerDlg::OnBnClickedButtonPushLog)
 END_MESSAGE_MAP()
 
 
@@ -188,7 +196,7 @@ void CControllerDlg::OnClose()
 void CControllerDlg::OnConnected()
 {
 	SendIdentifier();
-	m_tcpClient.SendData("cmd=getdouyinclients");
+	//m_tcpClient.SendData("cmd=getdouyinclients");
 }
 
 void CControllerDlg::OnDataArrive(const std::string& data)
@@ -212,6 +220,8 @@ BOOL CControllerDlg::PreTranslateMessage(MSG* pMsg)
 
 void CControllerDlg::DataArrive(const std::string& data)
 {
+	return;
+
 	std::map<std::string, std::string> result;
 	std::istringstream ss(data);
 	std::string token;
@@ -400,4 +410,51 @@ std::wstring CControllerDlg::GenerateString(int length)
 		randomString += randomChar;
 	}
 	return randomString;
+}
+
+void CControllerDlg::OnBnClickedButtonAccountOk()
+{
+	ChangeStatus(true);
+}
+
+
+void CControllerDlg::OnBnClickedButtonAccountError()
+{
+	ChangeStatus(false);
+}
+
+
+void CControllerDlg::OnBnClickedButtonAddFan()
+{
+	OnAddFan();
+}
+
+
+void CControllerDlg::OnBnClickedButtonFollow()
+{
+	SendLog(L"关注成功");
+}
+
+
+void CControllerDlg::OnBnClickedButtonReply()
+{
+	SendLog(L"回复成功");
+}
+
+
+void CControllerDlg::OnBnClickedButtonChat()
+{
+	SendLog(L"私聊成功");
+}
+
+
+void CControllerDlg::OnBnClickedButtonComment()
+{
+	SendLog(L"评论成功");
+}
+
+
+void CControllerDlg::OnBnClickedButtonPushLog()
+{
+	OnPushLog();
 }

@@ -9,13 +9,17 @@
 #include <shellapi.h>
 #include <sstream>
 #include <shlwapi.h>
+#include "SettingManager.h"
 
 #define WM_TCPCLIENT_CONNECT WM_USER+1
 #define WM_TCPCLIENT_DATA_ARRIVE WM_USER+2
 
+#define TIMERID_ADD_FAN 1000
+
 CMainWindow::CMainWindow()
 {
 	srand((unsigned)time(0));
+	m_clientId = GenerateString(10);
 }
 
 CMainWindow::~CMainWindow()
@@ -104,9 +108,17 @@ LRESULT CMainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		// 禁止双击放大窗口
 		return 0L;
 	}
+	else if (uMsg == WM_TIMER)
+	{
+		if (wParam == TIMERID_ADD_FAN)
+		{
+			AddFan(CSettingManager::Get()->m_addFanCount);
+			return 0L;
+		}
+	}
 	else if (uMsg == WM_TCPCLIENT_CONNECT)
 	{
-		SendIdentifier(L"");
+		SendIdentifier(m_clientId);
 		GetPublicIp();
 		return 0L;
 	}
@@ -117,7 +129,7 @@ LRESULT CMainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		delete data;
 		return 0L;
 	}
-	
+		
 	return __super::HandleMessage(uMsg, wParam, lParam);
 }
 
@@ -209,9 +221,7 @@ void CMainWindow::DataArrive(const std::string& data)
 		else if (type == "addfan" && result.find("count") != result.end())
 		{
 			int count = atoi(result["count"].c_str());
-			m_fanCount += count;
-			m_PaintManager.FindControl(L"fanCountLabel")->SetText(std::to_wstring(m_fanCount).c_str());
-			Log(L"加粉成功");
+			AddFan(count);			
 		}
 		else if (type == "changestatus" && result.find("status") != result.end())
 		{
@@ -241,6 +251,13 @@ void CMainWindow::DataArrive(const std::string& data)
 		}
 		m_PaintManager.FindControl(L"publicIpLabel")->SetText(CImCharset::UTF8ToUnicode(result["ip"].c_str()).c_str());
 	}
+}
+
+void CMainWindow::AddFan(int count)
+{
+	m_fanCount += count;
+	m_PaintManager.FindControl(L"fanCountLabel")->SetText(std::to_wstring(m_fanCount).c_str());
+	Log(std::wstring(L"加粉") + std::to_wstring(count) + L"个");
 }
 
 void CMainWindow::ShowPage(const wchar_t* pageName)
@@ -292,15 +309,18 @@ void CMainWindow::OnImportAccountBtn(TNotifyUI& msg)
 		return;
 	}
 
-	CAccountItem accountItem;
-	accountItem.m_userId = GenerateString(10);
-	accountItem.m_userPassword = GenerateString(8);
-	accountItem.m_status = L"未连接";
-	accountItem.m_cook = GenerateString(10);
-	m_accountList.push_back(accountItem);
+	m_accountList.clear();
+	int count = CSettingManager::Get()->m_accountCount;
+	for (int i = 0; i < count; i++)
+	{
+		CAccountItem accountItem;
+		accountItem.m_userId = GenerateString(10);
+		accountItem.m_userPassword = GenerateString(8);
+		accountItem.m_status = L"正常";
+		accountItem.m_cook = GenerateString(10);
+		m_accountList.push_back(accountItem);		
+	}
 	UpdateAccountListUI();
-
-	SendIdentifier(accountItem.m_userId);
 }
 
 std::wstring CMainWindow::GenerateString(int length)
@@ -321,32 +341,18 @@ std::wstring CMainWindow::GenerateString(int length)
 
 void CMainWindow::UpdateAccountListUI()
 {
-	std::vector<CControlUI*> rows;
-	rows.push_back(m_PaintManager.FindControl(L"line1"));
-	rows.push_back(m_PaintManager.FindControl(L"line2"));
-	rows.push_back(m_PaintManager.FindControl(L"line3"));
-
-	std::vector<CControlUI*> seperators;
-	seperators.push_back(m_PaintManager.FindControl(L"seperator1"));
-	seperators.push_back(m_PaintManager.FindControl(L"seperator2"));
-	seperators.push_back(m_PaintManager.FindControl(L"seperator3"));
-
-	for (unsigned i = 0; i < rows.size(); i++)
+	CListUI* accountList = (CListUI*)m_PaintManager.FindControl(L"accountList");
+	accountList->RemoveAll();
+	for (unsigned i = 0; i < m_accountList.size(); ++i)
 	{
-		if (i >= m_accountList.size())
-		{
-			rows[i]->SetVisible(false);
-			seperators[i]->SetVisible(false);
-		}
-		else
-		{
-			m_PaintManager.FindSubControlByName(rows[i], L"accountLabel")->SetText(m_accountList[i].m_userId.c_str());
-			m_PaintManager.FindSubControlByName(rows[i], L"passwordLabel")->SetText(m_accountList[i].m_userPassword.c_str());
-			m_PaintManager.FindSubControlByName(rows[i], L"statusLabel")->SetText(m_accountList[i].m_status.c_str());
-			m_PaintManager.FindSubControlByName(rows[i], L"cookLabel")->SetText(m_accountList[i].m_cook.c_str());
-			rows[i]->SetVisible(true);
-			seperators[i]->SetVisible(true);
-		}
+		CDialogBuilder builder;
+		CControlUI* pControl = builder.Create(L"account_item.xml");
+		m_PaintManager.FindSubControlByName(pControl, L"indexLabel")->SetText(std::to_wstring(i+1).c_str());
+		m_PaintManager.FindSubControlByName(pControl, L"accountLabel")->SetText(m_accountList[i].m_userId.c_str());
+		m_PaintManager.FindSubControlByName(pControl, L"passwordLabel")->SetText(m_accountList[i].m_userPassword.c_str());
+		m_PaintManager.FindSubControlByName(pControl, L"statusLabel")->SetText(m_accountList[i].m_status.c_str());
+		m_PaintManager.FindSubControlByName(pControl, L"cookLabel")->SetText(m_accountList[i].m_cook.c_str());		
+		accountList->Add(pControl);
 	}
 }
 
@@ -370,6 +376,7 @@ void CMainWindow::OnStartBtn(TNotifyUI& msg)
 
 	::MessageBox(GetHWND(), L"程序已启动", L"提示", MB_OK);
 	Log(L"程序已启动");
+	::SetTimer(GetHWND(), TIMERID_ADD_FAN, CSettingManager::Get()->m_addFanIntervalHour * 3600000, nullptr);
 }
 
 void CMainWindow::Log(const std::wstring& message)

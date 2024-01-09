@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<Window>
+    <ListContainerElement height="34">
+        <HorizontalLayout >                    
+            <Label name="indexLabel" width="80" text="1" textcolor="#ff000000" align="center" valign="center" font="1" />
+            <Label name="accountLabel" width="160" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+            <Label name="passwordLabel" width="160" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+            <Label name="statusLabel" width="82" text="正常" textcolor="#ff000000" align="center" valign="center" font="2" />
+            <Label name="cookLabel" width="200" text="addfal123423" textcolor="#ff000000" align="center" valign="center" font="2" />
+        </HorizontalLayout>
+    </ListContainerElement>
+</Window>
