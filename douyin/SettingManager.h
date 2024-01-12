@@ -9,6 +9,8 @@ private:
 public:
 	static CSettingManager* Get();
 
+	void SetAddFanRange(int min, int max);
+
 private:
 	void Load();
 
@@ -17,8 +19,8 @@ public:
 
 	int m_accountCount = 500;
 
-	int m_addFanIntervalHour = 2;
+	int m_addFanMin = 0;
 
-	int m_addFanCount = 12;
+	int m_addFanMax = 0;
 };
 

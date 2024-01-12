@@ -145,7 +145,7 @@ void CServer::HandleData(SOCKET clientSocket, const std::string& data)
 			auto it = m_douyinClients.find(id);
 			if (it == m_douyinClients.end())
 			{
-				LOG_ERROR(L"failed to push cmd to %s", id.c_str());
+				LOG_ERROR(L"failed to push cmd to %s", CImCharset::UTF8ToUnicode(id.c_str()).c_str());
 				return;
 			}
 			
@@ -153,13 +153,9 @@ void CServer::HandleData(SOCKET clientSocket, const std::string& data)
 		}
 		else
 		{
-			size_t pos = data.find("id=");
-			std::string prefix = data.substr(0, pos+3);
-			std::string suffix = data.substr(pos + 3);
 			for (auto it = m_douyinClients.begin(); it != m_douyinClients.end(); it++)
-			{				
-				std::string newData = prefix + it->first + suffix;
-				m_tcpServer.SendData(it->second, newData);
+			{
+				m_tcpServer.SendData(it->second, data);
 			}
 		}
 	}

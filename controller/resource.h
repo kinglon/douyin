@@ -18,9 +18,15 @@
 #define IDC_BUTTON_ACCOUNT_ERROR        1006
 #define IDC_BUTTON_ADD_FAN              1007
 #define IDC_BUTTON_FOLLOW               1008
+#define IDC_EDIT_ACCOUNT_COUNT          1008
 #define IDC_BUTTON_REPLY                1009
+#define IDC_EDIT_FANMIN                 1009
 #define IDC_BUTTON_CHAT                 1010
+#define IDC_EDIT3                       1010
+#define IDC_EDIT_FANMAX                 1010
 #define IDC_BUTTON_COMMENT              1011
+#define IDC_EDIT1                       1011
+#define IDC_EDIT_MACHINE_CODE           1011
 #define IDC_BUTTON_PUSH_LOG             1012
 #define ID_32771                        32771
 #define ID_32772                        32772
@@ -45,7 +51,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32787
-#define _APS_NEXT_CONTROL_VALUE         1006
+#define _APS_NEXT_CONTROL_VALUE         1012
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

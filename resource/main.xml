@@ -27,8 +27,12 @@
             </HorizontalLayout>
             <Control height="182" />
             <HorizontalLayout height="30">
-                <Control width="584" />
+                <Control width="452" />
+                <Label name="connectionStatusLabel" width="64" text="等待" textcolor="#ff8c8c8c" font="2" valign="center" />
+                <Control width="58" />
                 <Label name="publicIpLabel" width="110" text="" textcolor="#ff8c8c8c" font="2" valign="center" />
+                <Control width="74" />
+                <Label name="machineCodeLabel" width="150" text="" textcolor="#ff8c8c8c" font="2" valign="center" />
             </HorizontalLayout>            
         </VerticalLayout>
         

@@ -28,17 +28,13 @@ public:
 	virtual void OnDataArrive(const std::string& data) override;
 
 private:
-	void DataArrive(const std::string& data);
-
-	void UpdateClientListUI(const std::vector<std::wstring>& clients);
-
-	void SendLog(const std::wstring& content);
-
-	void ChangeStatus(bool ok);
+	void DataArrive(const std::string& data);	
 
 	void SendIdentifier();
 
 	std::wstring GenerateString(int length);
+
+	CString GetMachineCode();
 
 private:
 	CTcpClient m_tcpClient;
@@ -57,26 +53,13 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
-public:
-	CButton m_controlAllCheckBox;
-	CListCtrl m_clientList;
+public:	
 	afx_msg void OnClose();
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
-	afx_msg void OnNMRClickListClient(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnAccountOk();
-	afx_msg void OnAccountError();
-	afx_msg void OnAddFan();
-	afx_msg void OnFollow();
-	afx_msg void OnReply();
-	afx_msg void OnPrivateChat();
-	afx_msg void OnComment();
-	afx_msg void OnPushLog();
-	afx_msg void OnBnClickedButtonAccountOk();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);	
 	afx_msg void OnBnClickedButtonAccountError();
 	afx_msg void OnBnClickedButtonAddFan();
-	afx_msg void OnBnClickedButtonFollow();
-	afx_msg void OnBnClickedButtonReply();
-	afx_msg void OnBnClickedButtonChat();
-	afx_msg void OnBnClickedButtonComment();
-	afx_msg void OnBnClickedButtonPushLog();
+	CEdit m_accountCountEdit;
+	CEdit m_fanMinEdit;
+	CEdit m_fanMaxEdit;
+	CEdit m_machineCodeEdit;
 };

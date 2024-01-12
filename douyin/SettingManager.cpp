@@ -26,6 +26,16 @@ void CSettingManager::Load()
 	GetPrivateProfileString(L"setting", L"server_addr", L"127.0.0.1", serverAddr, MAX_PATH-1, confFilePath.c_str());
 	m_serverAddr = serverAddr;
 	m_accountCount = GetPrivateProfileInt(L"setting", L"account_count", 200, confFilePath.c_str());
-	m_addFanIntervalHour = GetPrivateProfileInt(L"setting", L"add_fan_interval_hour", 1, confFilePath.c_str());
-	m_addFanCount = GetPrivateProfileInt(L"setting", L"add_fan_count", 6, confFilePath.c_str());
+	m_addFanMin = GetPrivateProfileInt(L"setting", L"add_fan_min", 0, confFilePath.c_str());
+	m_addFanMax = GetPrivateProfileInt(L"setting", L"add_fan_max", 0, confFilePath.c_str());
+}
+
+void CSettingManager::SetAddFanRange(int min, int max)
+{
+	m_addFanMin = min;
+	m_addFanMax = max;
+
+	std::wstring confFilePath = CImPath::GetConfPath() + L"configs.ini";
+	WritePrivateProfileString(L"setting", L"add_fan_min", std::to_wstring(m_addFanMin).c_str(), confFilePath.c_str());
+	WritePrivateProfileString(L"setting", L"add_fan_max", std::to_wstring(m_addFanMax).c_str(), confFilePath.c_str());
 }

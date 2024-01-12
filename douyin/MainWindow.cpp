@@ -10,16 +10,19 @@
 #include <sstream>
 #include <shlwapi.h>
 #include "SettingManager.h"
+#include <iphlpapi.h>
+#include <set>
+
+#pragma comment(lib, "IPHLPAPI.lib")
 
 #define WM_TCPCLIENT_CONNECT WM_USER+1
 #define WM_TCPCLIENT_DATA_ARRIVE WM_USER+2
 
-#define TIMERID_ADD_FAN 1000
+#define TIMERID 1000
 
 CMainWindow::CMainWindow()
 {
-	srand((unsigned)time(0));
-	m_clientId = GenerateString(10);
+	srand((unsigned)time(0));	
 }
 
 CMainWindow::~CMainWindow()
@@ -32,12 +35,7 @@ void CMainWindow::InitWindow()
 
 	SetIcon(IDI_DOUYIN);
 
-	m_currentPage = m_PaintManager.FindControl(L"accountPage");
-
-	m_tcpClient.SetCallback(this);
-	m_tcpClient.SetHost(CImCharset::UnicodeToUTF8(CSettingManager::Get()->m_serverAddr.c_str()).c_str());
-	m_tcpClient.SetPort(80);
-	m_tcpClient.Start();
+	m_currentPage = m_PaintManager.FindControl(L"accountPage");	
 }
 
 void CMainWindow::OnFinalMessage(HWND hWnd)
@@ -110,16 +108,15 @@ LRESULT CMainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	else if (uMsg == WM_TIMER)
 	{
-		if (wParam == TIMERID_ADD_FAN)
+		if (wParam == TIMERID)
 		{
-			AddFan(CSettingManager::Get()->m_addFanCount);
+			AddFan();
 			return 0L;
 		}
 	}
 	else if (uMsg == WM_TCPCLIENT_CONNECT)
 	{
-		SendIdentifier(m_clientId);
-		GetPublicIp();
+		OnTcpClientConnected();
 		return 0L;
 	}
 	else if (uMsg == WM_TCPCLIENT_DATA_ARRIVE)
@@ -131,6 +128,22 @@ LRESULT CMainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 		
 	return __super::HandleMessage(uMsg, wParam, lParam);
+}
+
+void CMainWindow::OnTcpClientConnected()
+{
+	m_PaintManager.FindControl(L"connectionStatusLabel")->SetText(L"运行");
+
+	if (m_clientId.empty()) 
+	{
+		m_clientId = GetMachineCode();
+		m_PaintManager.FindControl(L"machineCodeLabel")->SetText(m_clientId.c_str());
+	}
+	SendIdentifier(m_clientId);
+
+	GetPublicIp();
+
+	::SetTimer(GetHWND(), TIMERID, 1000, nullptr);
 }
 
 void CMainWindow::OnConnected()
@@ -207,36 +220,29 @@ void CMainWindow::DataArrive(const std::string& data)
 	std::string cmd = result["cmd"];
 	if (cmd == "push")
 	{
-		if (result.find("id") == result.end() || result.find("type") == result.end())
+		if (result.find("type") == result.end())
 		{
 			return;
 		}
-
-		std::wstring id = CImCharset::UTF8ToUnicode(result["id"].c_str());
+		
 		std::string type = result["type"];
 		if (type == "log" && result.find("message") != result.end())
 		{
 			Log(CImCharset::UTF8ToUnicode(result["message"].c_str()));
 		}
-		else if (type == "addfan" && result.find("count") != result.end())
+		else if (type == "addfan" && result.find("min") != result.end() && result.find("max") != result.end())
+		{
+			int min = atoi(result["min"].c_str());
+			int max = atoi(result["max"].c_str());
+			CSettingManager::Get()->SetAddFanRange(min, max);
+			// 清空加粉计划
+			m_fanPlanTimeSec = 0;
+			m_fanPlan.clear();
+		}
+		else if (type == "changestatus" && result.find("count") != result.end())
 		{
 			int count = atoi(result["count"].c_str());
-			AddFan(count);			
-		}
-		else if (type == "changestatus" && result.find("status") != result.end())
-		{
-			for (auto& account : m_accountList)
-			{
-				if (result["status"] == "0")
-				{
-					account.m_status = L"正常";
-				}
-				else
-				{
-					account.m_status = L"异常";
-				}
-			}
-			UpdateAccountListUI();
+			ChangeAccountStatus(count);
 		}
 	}
 	else if (cmd == "get_public_ip")
@@ -249,11 +255,131 @@ void CMainWindow::DataArrive(const std::string& data)
 	}
 }
 
-void CMainWindow::AddFan(int count)
+void CMainWindow::ChangeAccountStatus(int count)
 {
-	m_fanCount += count;
-	m_PaintManager.FindControl(L"fanCountLabel")->SetText(std::to_wstring(m_fanCount).c_str());
-	Log(std::wstring(L"加粉") + std::to_wstring(count) + L"个");
+	// 获取正常账号的索引列表
+	std::vector<int> accountIndices;
+	for (unsigned i = 0; i < m_accountList.size(); i++)
+	{
+		if (m_accountList[i].m_status == L"正常")
+		{
+			accountIndices.push_back(i);
+		}
+	}
+
+	if ((int)accountIndices.size() <= count)
+	{
+		for (unsigned i = 0; i < accountIndices.size(); i++)
+		{
+			m_accountList[accountIndices[i]].m_status = L"异常";
+		}
+		return;
+	}
+
+	// 随机选择指定个数
+	std::set<int> selectSet;
+	int time = 0;
+	while (time < 10000)
+	{
+		time++;
+		selectSet.insert(selectSet.end(), rand() % accountIndices.size());
+		if ((int)selectSet.size() >= count)
+		{
+			break;
+		}
+	}
+
+	for (auto it = selectSet.begin(); it != selectSet.end(); it++)
+	{
+		m_accountList[accountIndices[*it]].m_status = L"异常";
+	}
+
+	UpdateAccountListUI();
+}
+
+void CMainWindow::AddFan()
+{	
+	if (CSettingManager::Get()->m_addFanMax <= 0)
+	{
+		return;
+	}
+
+	// 创建加粉计划
+	ULONGLONG now = GetTickCount64() / 1000;
+	if (m_fanPlanTimeSec == 0 || now - m_fanPlanTimeSec > 3600)
+	{
+		m_fanPlanTimeSec = now;
+		int min = CSettingManager::Get()->m_addFanMin;
+		int count = rand() % (CSettingManager::Get()->m_addFanMax - min + 1) + min;
+		std::wstring actions[4] = { L"关注成功", L"回复成功", L"私聊成功", L"评论成功" };
+		m_fanPlan.clear();
+		for (int i = 0; i < count; i++)
+		{
+			CFanItem fanItem;
+			fanItem.m_addFanTimeSec = m_fanPlanTimeSec + rand() % 3600;
+			fanItem.m_action = actions[rand() % ARRAYSIZE(actions)];
+			m_fanPlan.push_back(fanItem);
+		}
+
+		return;
+	}
+
+	// 执行加粉计划
+	for (auto it = m_fanPlan.begin(); it != m_fanPlan.end(); it++)
+	{
+		if (it->m_addFanTimeSec <= now)
+		{
+			Log(it->m_action);
+			m_fanCount++;
+			m_PaintManager.FindControl(L"fanCountLabel")->SetText(std::to_wstring(m_fanCount).c_str());
+			m_fanPlan.erase(it);
+			break;
+		}
+	}
+}
+
+std::wstring CMainWindow::GetMachineCode()
+{
+	std::wstring machineCode;
+	ULONG ulOutBufLen = sizeof (IP_ADAPTER_ADDRESSES);
+	PIP_ADAPTER_ADDRESSES pAddresses = (IP_ADAPTER_ADDRESSES *)malloc(ulOutBufLen);
+
+	// Make an initial call to GetAdaptersAddresses to get the necessary size into the ulOutBufLen variable
+	if (GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, pAddresses, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) 
+	{
+		free(pAddresses);
+		pAddresses = (IP_ADAPTER_ADDRESSES *)malloc(ulOutBufLen);		
+	}
+
+	// Make a second call to GetAdaptersAddresses to get the actual data we want
+	DWORD dwRetVal = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, NULL, pAddresses, &ulOutBufLen);
+	if (dwRetVal == NO_ERROR) 
+	{
+		PIP_ADAPTER_ADDRESSES pCurrAddresses = pAddresses;
+		while (pCurrAddresses) 
+		{
+			if ((pCurrAddresses->IfType == IF_TYPE_ETHERNET_CSMACD || pCurrAddresses->IfType == IF_TYPE_IEEE80211)
+				&& pCurrAddresses->OperStatus == IfOperStatusUp
+				&& pCurrAddresses->PhysicalAddressLength > 0)
+			{
+				for (int i = 0; i < (int)pCurrAddresses->PhysicalAddressLength; i++) 
+				{
+					wchar_t address[5];
+					swprintf(address, L"%.2x", (int)pCurrAddresses->PhysicalAddress[i]);
+					machineCode += address;
+				}				
+				break;
+			}
+			pCurrAddresses = pCurrAddresses->Next;
+		}
+	}
+
+	if (pAddresses)
+	{
+		free(pAddresses);
+	}
+
+	return machineCode;
 }
 
 void CMainWindow::ShowPage(const wchar_t* pageName)
@@ -370,9 +496,13 @@ void CMainWindow::OnStartBtn(TNotifyUI& msg)
 		return;
 	}
 
-	::MessageBox(GetHWND(), L"程序已启动", L"提示", MB_OK);
+	m_tcpClient.SetCallback(this);
+	m_tcpClient.SetHost(CImCharset::UnicodeToUTF8(CSettingManager::Get()->m_serverAddr.c_str()).c_str());
+	m_tcpClient.SetPort(80);
+	m_tcpClient.Start();
+
 	Log(L"程序已启动");
-	::SetTimer(GetHWND(), TIMERID_ADD_FAN, CSettingManager::Get()->m_addFanIntervalHour * 3600000, nullptr);
+	::MessageBox(GetHWND(), L"程序已启动", L"提示", MB_OK);
 }
 
 void CMainWindow::Log(const std::wstring& message)

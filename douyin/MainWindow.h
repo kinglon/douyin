@@ -18,6 +18,15 @@ public:
 	std::wstring m_cook;
 };
 
+// 加粉
+class CFanItem
+{
+public:
+	ULONGLONG m_addFanTimeSec = 0;  // 加粉触发时间，相对于系统启动时间
+
+	std::wstring m_action;  // 加粉行为：关注/回复/私聊/评论成功
+};
+
 class CMainWindow : public WindowImplBase, public ITcpClientCallback
 {
 public:
@@ -71,13 +80,19 @@ private:
 
 	void Log(const std::wstring& message);
 
+	void OnTcpClientConnected();
+
 	void DataArrive(const std::string& data);
 
 	void SendIdentifier(const std::wstring& identifier);
 
 	void GetPublicIp();
 
-	void AddFan(int count);
+	void AddFan();
+
+	void ChangeAccountStatus(int count);
+
+	std::wstring GetMachineCode();
 
 private:
 	std::vector<CAccountItem> m_accountList;
@@ -93,4 +108,8 @@ private:
 	CTcpClient m_tcpClient;
 
 	std::wstring m_clientId;
+
+	ULONGLONG m_fanPlanTimeSec = 0; // 加粉计划创建时间，单位秒，距离系统启动的时间
+
+	std::vector<CFanItem> m_fanPlan;  // 加粉计划
 };
