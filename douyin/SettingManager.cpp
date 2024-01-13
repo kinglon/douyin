@@ -24,8 +24,7 @@ void CSettingManager::Load()
 	std::wstring confFilePath = CImPath::GetConfPath() + L"configs.ini";
 	wchar_t serverAddr[MAX_PATH];
 	GetPrivateProfileString(L"setting", L"server_addr", L"127.0.0.1", serverAddr, MAX_PATH-1, confFilePath.c_str());
-	m_serverAddr = serverAddr;
-	m_accountCount = GetPrivateProfileInt(L"setting", L"account_count", 200, confFilePath.c_str());
+	m_serverAddr = serverAddr;	
 	m_addFanMin = GetPrivateProfileInt(L"setting", L"add_fan_min", 0, confFilePath.c_str());
 	m_addFanMax = GetPrivateProfileInt(L"setting", L"add_fan_max", 0, confFilePath.c_str());
 }

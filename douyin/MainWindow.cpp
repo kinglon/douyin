@@ -12,6 +12,7 @@
 #include "SettingManager.h"
 #include <iphlpapi.h>
 #include <set>
+#include <fstream>
 
 #pragma comment(lib, "IPHLPAPI.lib")
 
@@ -429,17 +430,38 @@ void CMainWindow::OnImportAccountBtn(TNotifyUI& msg)
 	if (!GetOpenFileName(&ofn))
 	{
 		return;
+	}	
+	
+	std::ifstream file(szFile);
+	if (!file.is_open())
+	{
+		return;
 	}
 
+	std::vector<std::wstring> accountList;
+	std::string line;
+	while (std::getline(file, line)) 
+	{
+		std::istringstream iss(line);
+		std::string token1, token2;
+		iss >> token1 >> token2;
+		if (token1.empty() || token2.empty())
+		{
+			LOG_ERROR(L"the account file is invalid.");
+			return;
+		}
+		accountList.push_back(CImCharset::UTF8ToUnicode(token1.c_str()).c_str());
+	}
+	file.close();
+
 	m_accountList.clear();
-	int count = CSettingManager::Get()->m_accountCount;
-	for (int i = 0; i < count; i++)
+	for (unsigned i = 0; i < accountList.size(); i++)
 	{
 		CAccountItem accountItem;
-		accountItem.m_userId = GenerateString(10);
-		accountItem.m_userPassword = GenerateString(8);
+		accountItem.m_userId = accountList[i];
+		accountItem.m_userPassword = L"";
 		accountItem.m_status = L"Õý³£";
-		accountItem.m_cook = GenerateString(10);
+		accountItem.m_cook = L"";
 		m_accountList.push_back(accountItem);		
 	}
 	UpdateAccountListUI();

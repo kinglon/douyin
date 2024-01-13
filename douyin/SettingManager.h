@@ -17,8 +17,6 @@ private:
 public:
 	std::wstring m_serverAddr = L"127.0.0.1";
 
-	int m_accountCount = 500;
-
 	int m_addFanMin = 0;
 
 	int m_addFanMax = 0;
