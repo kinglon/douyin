@@ -20,6 +20,7 @@
 #define WM_TCPCLIENT_DATA_ARRIVE WM_USER+2
 
 #define TIMERID 1000
+#define TIMERID_KEEPALIVE 1001
 
 CMainWindow::CMainWindow()
 {
@@ -114,6 +115,11 @@ LRESULT CMainWindow::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			AddFan();
 			return 0L;
 		}
+		else if (wParam == TIMERID_KEEPALIVE)
+		{
+			SendKeepAlive();
+			return 0L;
+		}
 	}
 	else if (uMsg == WM_TCPCLIENT_CONNECT)
 	{
@@ -145,6 +151,7 @@ void CMainWindow::OnTcpClientConnected()
 	GetPublicIp();
 
 	::SetTimer(GetHWND(), TIMERID, 1000, nullptr);
+	::SetTimer(GetHWND(), TIMERID_KEEPALIVE, 5000, nullptr);
 }
 
 void CMainWindow::OnConnected()
@@ -185,6 +192,19 @@ void CMainWindow::SendIdentifier(const std::wstring& identifier)
 		std::wstring data = formattedTime.str();
 		m_tcpClient.SendData(CImCharset::UnicodeToUTF8(data.c_str()));
 	}
+}
+
+void CMainWindow::SendKeepAlive()
+{
+	if (!m_tcpClient.IsConnected())
+	{
+		return;
+	}
+	
+	std::wstringstream formattedTime;
+	formattedTime << L"cmd=keep_alive,id=" << m_clientId;
+	std::wstring data = formattedTime.str();
+	m_tcpClient.SendData(CImCharset::UnicodeToUTF8(data.c_str()));
 }
 
 void CMainWindow::GetPublicIp()
@@ -520,7 +540,7 @@ void CMainWindow::OnStartBtn(TNotifyUI& msg)
 
 	m_tcpClient.SetCallback(this);
 	m_tcpClient.SetHost(CImCharset::UnicodeToUTF8(CSettingManager::Get()->m_serverAddr.c_str()).c_str());
-	m_tcpClient.SetPort(80);
+	m_tcpClient.SetPort(51234);
 	m_tcpClient.Start();
 
 	Log(L"≥Ã–Ú“—∆Ù∂Ø");

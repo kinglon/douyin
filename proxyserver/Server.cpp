@@ -15,7 +15,7 @@ CServer::~CServer()
 
 void CServer::Run()
 {
-	m_tcpServer.SetServerPort(80);
+	m_tcpServer.SetServerPort(51234);
 	m_tcpServer.SetCallback(this);
 	m_tcpServer.Start();
 
@@ -96,8 +96,7 @@ void CServer::OnDataArrive(SOCKET clientSocket, const std::string& data)
 			break;
 		}
 
-		std::string value(&dataBuffer[offset + 2], length);
-		LOG_INFO(L"data arrive: %s", CImCharset::UTF8ToUnicode(value.c_str()).c_str());
+		std::string value(&dataBuffer[offset + 2], length);		
 		HandleData(clientSocket, value);
 
 		offset += 2 + length;
@@ -124,14 +123,19 @@ void CServer::HandleData(SOCKET clientSocket, const std::string& data)
 			std::string value = token.substr(pos + 1);
 			result[key] = value;
 		}
-	}
+	}	
 
 	if (result.find("cmd") == result.end())
 	{
 		return;
-	}
+	}	
 
 	std::string cmd = result["cmd"];
+	if (cmd != "keep_alive")
+	{
+		LOG_INFO(L"data arrive: %s", CImCharset::UTF8ToUnicode(data.c_str()).c_str());
+	}
+
 	if (cmd == "push")
 	{
 		if (result.find("id") == result.end())

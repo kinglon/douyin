@@ -141,7 +141,8 @@ void CTcpClient::SendData(const std::string& data)
 	memcpy(&dataBuffer[2], data.c_str(), data.length());	
 	if (send(m_clientSocket, dataBuffer, data.length()+2, 0) == SOCKET_ERROR)
 	{
-		LOG_ERROR(L"failed to send data, error: %d, data: %s", WSAGetLastError(), CImCharset::UTF8ToUnicode(data.c_str()).c_str());		
+		LOG_ERROR(L"failed to send data, error: %d, data: %s", WSAGetLastError(), CImCharset::UTF8ToUnicode(data.c_str()).c_str());	
+		closesocket(m_clientSocket);
 	}
 	delete[] dataBuffer;
 }

@@ -79,7 +79,7 @@ void CTcpClient::ThreadProc()
 			}
 			else if (bytesReceived == 0) 
 			{
-				LOG_INFO(L"Connection closed by server");
+				LOG_INFO(L"Connection closed");
 				break;
 			}
 			else
@@ -127,14 +127,14 @@ void CTcpClient::ParseData(char* dataBuffer, int& dataLength)
 	}
 }
 
-void CTcpClient::SendData(const std::string& data)
+bool CTcpClient::SendData(const std::string& data)
 {
 	LOG_INFO(L"send data: %s", CImCharset::UTF8ToUnicode(data.c_str()).c_str());
 
 	if (m_clientSocket == INVALID_SOCKET)
 	{
 		LOG_ERROR(L"failed to send data, not connected");
-		return;
+		return false;
 	}
 
 	char* dataBuffer = new char[data.length() + 2];
@@ -143,7 +143,14 @@ void CTcpClient::SendData(const std::string& data)
 	memcpy(&dataBuffer[2], data.c_str(), data.length());	
 	if (send(m_clientSocket, dataBuffer, data.length()+2, 0) == SOCKET_ERROR)
 	{
-		LOG_ERROR(L"failed to send data, error: %d, data: %s", WSAGetLastError(), CImCharset::UTF8ToUnicode(data.c_str()).c_str());		
+		LOG_ERROR(L"failed to send data, error: %d, data: %s", WSAGetLastError(), CImCharset::UTF8ToUnicode(data.c_str()).c_str());
+		closesocket(m_clientSocket);
+		delete[] dataBuffer;
+		return false;
 	}
-	delete[] dataBuffer;
+	else
+	{
+		delete[] dataBuffer;
+		return true;
+	}
 }

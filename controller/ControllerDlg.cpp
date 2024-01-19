@@ -19,6 +19,8 @@
 
 #define WM_TCPCLIENT_DATA_ARRIVE WM_USER+1
 
+#define TIMERID_KEEPALIVE  1000
+
 class CAboutDlg : public CDialogEx
 {
 public:
@@ -58,6 +60,7 @@ CControllerDlg::CControllerDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_CONTROLLER_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	srand((unsigned)time(0));
 	m_id = GenerateString(10);
 }
 
@@ -77,6 +80,7 @@ BEGIN_MESSAGE_MAP(CControllerDlg, CDialogEx)
 	ON_WM_CLOSE()	
 	ON_BN_CLICKED(IDC_BUTTON_ACCOUNT_ERROR, &CControllerDlg::OnBnClickedButtonAccountError)
 	ON_BN_CLICKED(IDC_BUTTON_ADD_FAN, &CControllerDlg::OnBnClickedButtonAddFan)	
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -112,7 +116,7 @@ BOOL CControllerDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标	
 
 	m_tcpClient.SetHost("47.122.25.21");
-	m_tcpClient.SetPort(80);
+	m_tcpClient.SetPort(51234);
 	m_tcpClient.SetCallback(this);
 	m_tcpClient.Start();
 
@@ -172,6 +176,8 @@ void CControllerDlg::OnClose()
 void CControllerDlg::OnConnected()
 {
 	SendIdentifier();
+
+	SetTimer(TIMERID_KEEPALIVE, 5000, nullptr);
 }
 
 void CControllerDlg::OnDataArrive(const std::string& data)
@@ -206,6 +212,19 @@ void CControllerDlg::SendIdentifier()
 
 	std::wstringstream formattedTime;
 	formattedTime << L"cmd=identify,ctype=controller,id=" << m_id;
+	std::wstring data = formattedTime.str();
+	m_tcpClient.SendData(CImCharset::UnicodeToUTF8(data.c_str()));
+}
+
+void CControllerDlg::SendKeepAlive()
+{
+	if (!m_tcpClient.IsConnected())
+	{
+		return;
+	}
+
+	std::wstringstream formattedTime;
+	formattedTime << L"cmd=keep_alive,id=" << m_id;
 	std::wstring data = formattedTime.str();
 	m_tcpClient.SendData(CImCharset::UnicodeToUTF8(data.c_str()));
 }
@@ -283,4 +302,15 @@ CString CControllerDlg::GetMachineCode()
 	CString machineCode;
 	m_machineCodeEdit.GetWindowText(machineCode);
 	return machineCode.MakeLower();
+}
+
+void CControllerDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == TIMERID_KEEPALIVE)
+	{
+		SendKeepAlive();
+		return;
+	}
+
+	__super::OnTimer(nIDEvent);
 }

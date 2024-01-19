@@ -86,6 +86,8 @@ private:
 
 	void SendIdentifier(const std::wstring& identifier);
 
+	void SendKeepAlive();
+
 	void GetPublicIp();
 
 	void AddFan();

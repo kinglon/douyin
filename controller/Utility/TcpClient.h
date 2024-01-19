@@ -28,7 +28,7 @@ public:
 
 	void Stop() { m_isStart = false; }
 
-	void SendData(const std::string& data);
+	bool SendData(const std::string& data);
 
 	bool IsConnected() { return m_clientSocket != INVALID_SOCKET; }
 

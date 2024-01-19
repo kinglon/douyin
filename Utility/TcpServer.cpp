@@ -2,6 +2,7 @@
 #include "TcpServer.h"
 #include <future>
 #include "ImCharset.h"
+#include <ws2tcpip.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -103,7 +104,12 @@ void CTcpServer::ThreadProc()
 			}
 			else 
 			{
-				LOG_INFO(L"client 0x%x connected", clientSocket);
+				SOCKADDR_IN clientAddr;
+				int clientAddrLen = sizeof(clientAddr);
+				getpeername(clientSocket, (SOCKADDR*)&clientAddr, &clientAddrLen);
+				char clientIP[INET_ADDRSTRLEN];
+				inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
+				LOG_INFO(L"client 0x%x connected, ip is %s", clientSocket, CImCharset::UTF8ToUnicode(clientIP).c_str());
 				clientSockets.push_back(clientSocket);
 				if (m_callback)
 				{

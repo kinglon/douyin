@@ -32,6 +32,8 @@ private:
 
 	void SendIdentifier();
 
+	void SendKeepAlive();
+
 	std::wstring GenerateString(int length);
 
 	CString GetMachineCode();
@@ -62,4 +64,5 @@ public:
 	CEdit m_fanMinEdit;
 	CEdit m_fanMaxEdit;
 	CEdit m_machineCodeEdit;
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };
