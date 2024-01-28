@@ -12,6 +12,7 @@
 #include "ImCharset.h"
 #include "AddFanDlg.h"
 #include "PushLogDlg.h"
+#include "SettingManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -115,7 +116,7 @@ BOOL CControllerDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标	
 
-	m_tcpClient.SetHost("47.122.25.21");
+	m_tcpClient.SetHost(CImCharset::UnicodeToUTF8(CSettingManager::Get()->m_serverAddr.c_str()).c_str());
 	m_tcpClient.SetPort(51234);
 	m_tcpClient.SetCallback(this);
 	m_tcpClient.Start();
