@@ -294,6 +294,7 @@ void CMainWindow::ChangeAccountStatus(int count)
 		{
 			m_accountList[accountIndices[i]].m_status = L"Òì³£";
 		}
+        UpdateAccountListUI();
 		return;
 	}
 
@@ -505,6 +506,7 @@ std::wstring CMainWindow::GenerateString(int length)
 
 void CMainWindow::UpdateAccountListUI()
 {
+	LOG_INFO(L"update account status");
 	CListUI* accountList = (CListUI*)m_PaintManager.FindControl(L"accountList");
 	accountList->RemoveAll();
 	for (unsigned i = 0; i < m_accountList.size(); ++i)
